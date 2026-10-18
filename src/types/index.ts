@@ -28,6 +28,15 @@ export interface CreateLinkPayload {
   campaignId?: string | null;
 }
 
+export interface UpdateLinkPayload {
+  title?: string;
+  isActive?: boolean;
+  expiresAt?: string | null;
+  clickLimit?: number | null;
+  tags?: string[];
+  campaignId?: string | null;
+}
+
 export interface Campaign {
   id: string;
   name: string;
@@ -58,4 +67,11 @@ export interface LinkAnalytics {
   devices: ClickMetricItem[];
   browsers: ClickMetricItem[];
   countries: ClickMetricItem[];
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
 }
