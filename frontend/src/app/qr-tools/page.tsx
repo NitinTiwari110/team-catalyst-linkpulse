@@ -58,7 +58,6 @@ export default function QrAndBulkToolsPage() {
     initLinks();
   }, []);
 
-  // QR Download Handler
   const handleDownloadQr = () => {
     const canvas = qrCanvasRef.current?.querySelector("canvas");
     if (!canvas) return;
@@ -70,7 +69,6 @@ export default function QrAndBulkToolsPage() {
     downloadLink.click();
   };
 
-  // CSV Template Generator
   const downloadSampleCsv = () => {
     const csvContent =
       "data:text/csv;charset=utf-8," +
@@ -88,7 +86,6 @@ export default function QrAndBulkToolsPage() {
     document.body.removeChild(link);
   };
 
-  // CSV File Upload & Parsing
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -101,7 +98,6 @@ export default function QrAndBulkToolsPage() {
       const text = event.target?.result as string;
       const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
 
-      // Check header
       const headers = lines[0].toLowerCase().split(",");
       const urlIndex = headers.findIndex((h) => h.trim() === "url");
       const titleIndex = headers.findIndex((h) => h.trim() === "title");
@@ -146,7 +142,6 @@ export default function QrAndBulkToolsPage() {
     reader.readAsText(file);
   };
 
-  // Execute Batch Creation
   const handleExecuteImport = async () => {
     const validRows = parsedRows.filter((r) => r.valid);
     if (validRows.length === 0) return;
@@ -172,7 +167,6 @@ export default function QrAndBulkToolsPage() {
 
     setImporting(false);
     setImportSummary({ success: successCount, failed: failCount });
-    // Refresh links
     const updated = await fetchLinks();
     setLinks(updated);
   };
@@ -185,7 +179,7 @@ export default function QrAndBulkToolsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-brand-navy">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
               QR Studio & Bulk Ingestion
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -193,25 +187,25 @@ export default function QrAndBulkToolsPage() {
             </p>
           </div>
 
-          {/* Tab Pill Switcher */}
-          <div className="flex items-center rounded-xl bg-slate-200/70 p-1 self-start">
+          {/* Upgraded Pill Switcher */}
+          <div className="inline-flex items-center rounded-xl bg-slate-200/70 p-1 self-start shadow-inner border border-slate-300/40">
             <button
               onClick={() => setActiveTab("qr")}
-              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-semibold transition ${
+              className={`tab-pill flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-semibold transition-all ${
                 activeTab === "qr"
-                  ? "bg-white text-brand-navy shadow-sm"
-                  : "text-slate-600 hover:text-brand-navy"
+                  ? "bg-white text-slate-900 shadow-sm scale-100"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <QrCode className="h-3.5 w-3.5 text-brand-blue" />
+              <QrCode className="h-3.5 w-3.5 text-blue-600" />
               <span>QR Code Studio</span>
             </button>
             <button
               onClick={() => setActiveTab("bulk")}
-              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-semibold transition ${
+              className={`tab-pill flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-semibold transition-all ${
                 activeTab === "bulk"
-                  ? "bg-white text-brand-navy shadow-sm"
-                  : "text-slate-600 hover:text-brand-navy"
+                  ? "bg-white text-slate-900 shadow-sm scale-100"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
@@ -222,60 +216,56 @@ export default function QrAndBulkToolsPage() {
 
         {/* Tab 1: QR Code Studio */}
         {activeTab === "qr" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-150">
-            {/* Left Controls Column */}
-            <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white p-6 shadow-card space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-slide-up">
+            {/* Left Controls */}
+            <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm card-float space-y-5">
               <div>
-                <h3 className="text-base font-bold text-brand-navy">QR Code Customizer</h3>
+                <h3 className="text-base font-bold text-slate-900">QR Code Customizer</h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Select an active shortened link or enter any destination payload.
+                  Select an active shortened link or enter any custom URL.
                 </p>
               </div>
 
-              {/* Source Option: Existing Link Selector */}
               <div>
-                <label className="block text-xs font-semibold text-brand-navy mb-1.5">
+                <label className="block text-xs font-semibold text-slate-900 mb-1.5">
                   Target Short Link
                 </label>
-                <div className="relative">
-                  <select
-                    value={selectedLinkUrl}
-                    onChange={(e) => {
-                      setSelectedLinkUrl(e.target.value);
-                      setCustomQrText("");
-                    }}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2.5 text-xs text-brand-navy focus:bg-white focus:outline-none"
-                  >
-                    {links.map((link) => (
-                      <option key={link.id} value={link.shortUrl}>
-                        /{link.shortCode} — {link.title || link.originalUrl}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  value={selectedLinkUrl}
+                  onChange={(e) => {
+                    setSelectedLinkUrl(e.target.value);
+                    setCustomQrText("");
+                  }}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none transition-colors"
+                >
+                  {links.map((link) => (
+                    <option key={link.id} value={link.shortUrl}>
+                      /{link.shortCode} — {link.title || link.originalUrl}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Source Option: Custom Direct Target */}
               <div>
-                <label className="block text-xs font-semibold text-brand-navy mb-1">
+                <label className="block text-xs font-semibold text-slate-900 mb-1">
                   Or Custom URL Target
                 </label>
-                <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-xs">
+                <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs focus-within:bg-white focus-within:border-blue-500 transition-colors">
                   <Link2 className="h-4 w-4 text-slate-400 mr-2 shrink-0" />
                   <input
                     type="text"
                     value={customQrText}
                     onChange={(e) => setCustomQrText(e.target.value)}
                     placeholder="Override target (e.g. https://mybrand.com/promo)"
-                    className="w-full bg-transparent text-xs text-brand-navy focus:outline-none"
+                    className="w-full bg-transparent text-xs text-slate-900 focus:outline-none font-medium"
                   />
                 </div>
               </div>
 
-              {/* Color Presets */}
+              {/* Palette Color Presets */}
               <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-brand-navy mb-2">
-                  <Palette className="h-3.5 w-3.5 text-brand-blue" />
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 mb-2">
+                  <Palette className="h-3.5 w-3.5 text-blue-600" />
                   Palette Accent
                 </label>
                 <div className="flex items-center gap-3">
@@ -290,8 +280,8 @@ export default function QrAndBulkToolsPage() {
                       key={color.hex}
                       type="button"
                       onClick={() => setQrColor(color.hex)}
-                      className={`h-7 w-7 rounded-full transition-transform ${
-                        qrColor === color.hex ? "ring-2 ring-brand-blue ring-offset-2 scale-110" : ""
+                      className={`btn-press h-8 w-8 rounded-full transition-all ${
+                        qrColor === color.hex ? "ring-2 ring-blue-600 ring-offset-2 scale-110 shadow-md" : "hover:scale-105"
                       }`}
                       style={{ backgroundColor: color.hex }}
                       title={color.label}
@@ -302,9 +292,9 @@ export default function QrAndBulkToolsPage() {
 
               {/* Size Slider */}
               <div>
-                <div className="flex justify-between text-xs font-semibold text-brand-navy mb-1.5">
+                <div className="flex justify-between text-xs font-semibold text-slate-900 mb-1.5">
                   <span>Canvas Resolution</span>
-                  <span className="text-slate-500 font-mono">{qrSize} x {qrSize} px</span>
+                  <span className="text-blue-600 font-mono font-bold">{qrSize} x {qrSize} px</span>
                 </div>
                 <input
                   type="range"
@@ -313,20 +303,20 @@ export default function QrAndBulkToolsPage() {
                   step="20"
                   value={qrSize}
                   onChange={(e) => setQrSize(Number(e.target.value))}
-                  className="w-full accent-brand-blue cursor-pointer"
+                  className="w-full accent-blue-600 cursor-pointer"
                 />
               </div>
             </div>
 
-            {/* Right Preview Column */}
-            <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-card flex flex-col items-center justify-center text-center">
+            {/* Right Preview */}
+            <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm card-float flex flex-col items-center justify-center text-center">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
                 Render Canvas Preview
               </span>
 
               <div
                 ref={qrCanvasRef}
-                className="rounded-2xl border border-slate-200 bg-slate-50/60 p-6 shadow-inner flex items-center justify-center"
+                className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 shadow-inner flex items-center justify-center"
               >
                 <QRCodeCanvas
                   value={activeQrTarget}
@@ -339,7 +329,7 @@ export default function QrAndBulkToolsPage() {
               </div>
 
               <div className="mt-4 text-center">
-                <p className="font-mono text-xs font-bold text-brand-navy max-w-xs truncate">
+                <p className="font-mono text-xs font-bold text-slate-900 max-w-xs truncate">
                   {activeQrTarget}
                 </p>
                 <p className="text-[11px] text-slate-400 mt-0.5">High Error Correction (Level H)</p>
@@ -348,7 +338,7 @@ export default function QrAndBulkToolsPage() {
               <button
                 type="button"
                 onClick={handleDownloadQr}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand-navy px-5 py-2.5 text-xs font-semibold text-white hover:bg-brand-navy-light shadow-sm transition"
+                className="btn-glow mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-semibold"
               >
                 <Download className="h-4 w-4" />
                 <span>Download Print PNG</span>
@@ -359,11 +349,10 @@ export default function QrAndBulkToolsPage() {
 
         {/* Tab 2: Bulk CSV Import Engine */}
         {activeTab === "bulk" && (
-          <div className="space-y-6 animate-in fade-in duration-150">
-            {/* Instructions & Template Banner */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-6 animate-slide-up">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm card-float flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-brand-navy">Batch Spreadsheet Ingestion</h3>
+                <h3 className="text-base font-bold text-slate-900">Batch Spreadsheet Ingestion</h3>
                 <p className="text-xs text-slate-500 max-w-xl">
                   Upload a standard `.csv` file containing target destination links, titles, and custom aliases. The platform parses and validates each row client-side.
                 </p>
@@ -372,22 +361,21 @@ export default function QrAndBulkToolsPage() {
               <button
                 type="button"
                 onClick={downloadSampleCsv}
-                className="inline-flex items-center gap-1.5 self-start rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-semibold text-brand-navy hover:bg-slate-100 transition shadow-sm"
+                className="btn-press inline-flex items-center gap-1.5 self-start rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 shadow-xs"
               >
-                <FileDown className="h-3.5 w-3.5 text-brand-blue" />
+                <FileDown className="h-3.5 w-3.5 text-blue-600" />
                 <span>Download CSV Template</span>
               </button>
             </div>
 
-            {/* Drag & Drop File Zone */}
-            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-8 text-center hover:border-brand-blue transition">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-blue-subtle text-brand-blue mb-3">
+            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-8 text-center hover:border-blue-500 hover:bg-blue-50/10 transition-all card-float">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 mb-3 shadow-xs">
                 <Upload className="h-6 w-6" />
               </div>
-              <h4 className="text-sm font-bold text-brand-navy">Choose CSV Spreadsheet</h4>
+              <h4 className="text-sm font-bold text-slate-900">Choose CSV Spreadsheet</h4>
               <p className="text-xs text-slate-500 mt-1">Columns required: url (optional: title, alias)</p>
 
-              <label className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-blue px-4 py-2 text-xs font-semibold text-white cursor-pointer hover:bg-brand-blue-hover transition shadow-sm">
+              <label className="btn-glow mt-4 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold cursor-pointer">
                 <span>Browse File</span>
                 <input
                   type="file"
@@ -399,17 +387,16 @@ export default function QrAndBulkToolsPage() {
 
               {csvFile && (
                 <p className="text-xs text-slate-600 mt-3 font-medium">
-                  Selected: <span className="font-mono text-brand-navy font-bold">{csvFile.name}</span>
+                  Selected: <span className="font-mono text-slate-900 font-bold">{csvFile.name}</span>
                 </p>
               )}
             </div>
 
-            {/* Validation & Preview Table */}
             {parsedRows.length > 0 && (
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-card overflow-hidden">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/60">
                   <div>
-                    <h4 className="text-xs font-bold text-brand-navy uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                       Validation Preview ({parsedRows.length} Rows Detected)
                     </h4>
                     <p className="text-[11px] text-slate-400 mt-0.5">
@@ -421,7 +408,7 @@ export default function QrAndBulkToolsPage() {
                     type="button"
                     disabled={importing || parsedRows.filter((r) => r.valid).length === 0}
                     onClick={handleExecuteImport}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-brand-blue px-4 py-2 text-xs font-semibold text-white hover:bg-brand-blue-hover disabled:opacity-50 transition shadow-sm"
+                    className="btn-glow inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold disabled:opacity-50"
                   >
                     {importing ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -433,7 +420,7 @@ export default function QrAndBulkToolsPage() {
                 </div>
 
                 {importSummary && (
-                  <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between text-xs text-emerald-800">
+                  <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between text-xs text-emerald-800 animate-slide-up">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                       <span>
@@ -463,16 +450,16 @@ export default function QrAndBulkToolsPage() {
                           <td className="px-6 py-3 text-slate-600">
                             {row.title || <span className="text-slate-300 italic">None</span>}
                           </td>
-                          <td className="px-6 py-3 font-mono text-brand-blue">
+                          <td className="px-6 py-3 font-mono text-blue-600">
                             {row.alias ? `/${row.alias}` : <span className="text-slate-300 italic">Auto</span>}
                           </td>
                           <td className="px-6 py-3 text-right whitespace-nowrap">
                             {row.valid ? (
-                              <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold text-[11px]">
+                              <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[11px]">
                                 <CheckCircle2 className="h-3 w-3" /> Ready
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-red-600 font-semibold text-[11px]" title={row.error}>
+                              <span className="inline-flex items-center gap-1 text-rose-600 font-bold text-[11px]" title={row.error}>
                                 <AlertCircle className="h-3 w-3" /> {row.error || "Invalid"}
                               </span>
                             )}
