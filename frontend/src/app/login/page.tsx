@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     try {
       await loginUser(email, password);
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

@@ -158,7 +158,7 @@ export default function SignupPage() {
 
     try {
       await verifySignupOtp(otpSession.email, fullOtp);
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setBackendError(err.message);
