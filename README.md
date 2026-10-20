@@ -3,7 +3,7 @@
 > **Innovista 2026 Hackathon Submission**  
 > **Team Name:** TEAM CATALYST  
 > **Repository:** `team-catalyst-linkpulse`  
-> **Live Demo:** [https://team-catalyst-linkpulse.vercel.app](https://team-catalyst-linkpulse.vercel.app) *(Update with your deployed link)*
+> **Live Demo:** [https://team-catalyst-linkpulse.vercel.app](https://team-catalyst-linkpulse.vercel.app)
 
 ---
 
@@ -39,15 +39,15 @@ In modern digital operations, raw URLs are long, fragile, and opaque. Traditiona
   - **Browser distribution:** Chrome, Safari, Edge, Firefox.
   - **Geographic distribution:** Top visiting countries.
 
-### 🎯 Campaign Segmentation
-- Group multiple related short links under cohesive marketing or product initiatives.
-- Compare aggregate click volume and engagement across different campaigns.
-- Expandable drill-down drawers to inspect links tagged to specific channels.
-
 ### 🎨 QR Studio & Bulk CSV Ingestion
 - Interactive vector QR Code generator with customizable color palettes (Navy, Electric Blue, Emerald) and resolution scaling.
 - Instant high-resolution print-ready PNG downloads.
 - Drag-and-drop CSV batch importer with client-side syntax validation, pre-flight error reporting, and bulk link creation.
+
+### 🎯 Campaign Segmentation
+- Group multiple related short links under cohesive marketing or product initiatives.
+- Compare aggregate click volume and engagement across different campaigns.
+- Expandable drill-down drawers to inspect links tagged to specific channels.
 
 ---
 
@@ -64,6 +64,27 @@ In modern digital operations, raw URLs are long, fragile, and opaque. Traditiona
 | **Deployment** | Vercel (CI/CD Automated Git Pipeline) |
 
 ---
+
+## 🌐 Deployment & Infrastructure
+
+LinkPulse is deployed using a cloud-based architecture with separate hosting for the frontend, backend, and database.
+
+- **Frontend — Vercel:** Hosts the Next.js web application.
+  - Live URL: https://team-catalyst-linkpulse.vercel.app
+
+- **Backend — Render:** Hosts the Java Spring Boot REST API, which handles backend operations and link redirection.
+  - API Base URL: https://linkpulse-backend-2bbn.onrender.com
+
+- **Database — Aiven:** Provides the managed MySQL database used for persistent data storage.
+
+### 🏗️ Deployment Architecture
+
+`User → Vercel (Next.js Frontend) → Render (Spring Boot Backend) → Aiven (MySQL Database)`
+
+This architecture separates the presentation layer, application logic, and data storage, making LinkPulse easier to deploy and maintain.
+
+---
+
 
 ## 👥 5. TEAM CATALYST Roster
 
