@@ -2,7 +2,7 @@ import { Campaign, ApiResponse } from "@/types";
 import { getStoredCampaigns, saveStoredCampaigns, getStoredLinks } from "@/lib/storage";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+const USE_MOCK = false;
 
 export async function fetchCampaigns(): Promise<Campaign[]> {
   if (USE_MOCK) {

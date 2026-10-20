@@ -3,7 +3,7 @@ import { getStoredLinks, saveStoredLinks } from "@/lib/storage";
 import { SAMPLE_ANALYTICS } from "@/lib/mock-data/initial-data";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+const USE_MOCK = false;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 function generateShortCode(): string {

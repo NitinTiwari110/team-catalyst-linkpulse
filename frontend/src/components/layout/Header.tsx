@@ -13,7 +13,7 @@ interface HeaderProps {
 export default function Header({ onOpenMobileNav, onOpenCreateModal }: HeaderProps) {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
-  const isMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+  const isMock = false;
 
   useEffect(() => {
     setUser(getAuthUser());
