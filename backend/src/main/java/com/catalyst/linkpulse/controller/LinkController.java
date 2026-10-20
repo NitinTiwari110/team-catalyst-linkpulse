@@ -81,4 +81,15 @@ public class LinkController {
         LinkAnalyticsDto analytics = analyticsService.getAnalytics(id);
         return ResponseEntity.ok(ApiResponse.success(analytics, "Analytics retrieved successfully"));
     }
+
+    @GetMapping("/code/{shortCode}")
+    public ResponseEntity<ApiResponse<LinkDto>> getLinkByShortCode(
+            @PathVariable String shortCode) {
+
+        return linkService.getRawLinkByShortCode(shortCode)
+                .map(link -> ResponseEntity.ok(
+                        ApiResponse.success(linkService.toDto(link), "Link found")))
+                .orElse(ResponseEntity.status(404)
+                        .body(ApiResponse.error("Link not found")));
+    }
 }
