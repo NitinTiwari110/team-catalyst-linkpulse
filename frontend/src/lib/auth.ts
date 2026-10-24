@@ -1,19 +1,34 @@
+
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
 }
 
-export interface OtpSession {
-  email: string;
-  maskedEmail: string;
-  demoOtp: string;
-}
-
 const TOKEN_KEY = "linkpulse_jwt_token";
 const USER_KEY = "linkpulse_auth_user";
 const HAS_ACCOUNT_KEY = "linkpulse_has_account";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+interface AuthResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    userId: string;
+    name: string;
+    email: string;
+    token: string;
+  };
+}
+
+function getApiBaseUrl(): string {
+  if (!API_BASE_URL) {
+    throw new Error("Backend API URL is not configured.");
+  }
+
+  return API_BASE_URL.replace(/\/+$/, "");
+}
 
 export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -22,9 +37,10 @@ export function getAuthToken(): string | null {
 
 export function getAuthUser(): AuthUser | null {
   if (typeof window === "undefined") return null;
+
   try {
     const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? (JSON.parse(raw) as AuthUser) : null;
   } catch {
     return null;
   }
@@ -32,11 +48,16 @@ export function getAuthUser(): AuthUser | null {
 
 export function hasRegisteredBefore(): boolean {
   if (typeof window === "undefined") return false;
+
   return localStorage.getItem(HAS_ACCOUNT_KEY) === "true";
 }
 
-export function setAuthSession(token: string, user: AuthUser): void {
+export function setAuthSession(
+  token: string,
+  user: AuthUser
+): void {
   if (typeof window === "undefined") return;
+
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
   localStorage.setItem(HAS_ACCOUNT_KEY, "true");
@@ -44,104 +65,42 @@ export function setAuthSession(token: string, user: AuthUser): void {
 
 export function clearAuthSession(): void {
   if (typeof window === "undefined") return;
+
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 }
 
-function maskEmail(email: string): string {
-  const parts = email.split("@");
-  const prefix = parts[0];
-  const domain = parts[1] || "gmail.com";
-  const masked = prefix.length > 2 ? prefix.substring(0, 2) + "***" : prefix + "***";
-  return `${masked}@${domain}`;
-}
-
-export async function requestSignupOtp(name: string, email: string, password: string): Promise<OtpSession> {
-  const cleanEmail = email.trim().toLowerCase();
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+export async function signupUser(
+  name: string,
+  email: string,
+  password: string
+): Promise<AuthUser> {
+  const res = await fetch(
+    `${getApiBaseUrl()}/api/auth/signup`,
+    {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         name: name.trim(),
-        email: cleanEmail,
+        email: email.trim().toLowerCase(),
         password,
       }),
-    });
-
-    if (res.ok) {
-      const body = await res.json();
-      if (body.success && body.data) {
-        return {
-          email: body.data.email,
-          maskedEmail: body.data.maskedEmail,
-          demoOtp: body.data.demoOtp,
-        };
-      }
     }
-  } catch (e) {
-    console.warn("Backend /send-otp unreachable, activating client sandbox OTP:", e);
-  }
+  );
 
-  // Resilient Sandbox Fallback: If backend is restarting, generate valid 6-digit OTP so the user is never blocked!
-  const fallbackOtp = String(Math.floor(100000 + Math.random() * 900000));
-  return {
-    email: cleanEmail,
-    maskedEmail: maskEmail(cleanEmail),
-    demoOtp: fallbackOtp,
-  };
-}
+  const body: AuthResponse = await res.json().catch(() => ({
+    success: false,
+    message: "Invalid response from server.",
+  }));
 
-export async function verifySignupOtp(email: string, otp: string): Promise<AuthUser> {
-  const cleanEmail = email.trim().toLowerCase();
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: cleanEmail, otp: otp.trim() }),
-    });
-
-    if (res.ok) {
-      const body = await res.json();
-      if (body.success && body.data) {
-        const user: AuthUser = {
-          id: body.data.userId,
-          name: body.data.name,
-          email: body.data.email,
-        };
-        setAuthSession(body.data.token, user);
-        return user;
-      }
-    }
-  } catch (e) {
-    console.warn("Backend /verify-otp unavailable, completing registration locally:", e);
-  }
-
-  // Local fallback session
-  const user: AuthUser = {
-    id: "usr-" + Date.now(),
-    name: cleanEmail.split("@")[0].toUpperCase(),
-    email: cleanEmail,
-  };
-  setAuthSession("jwt-session-innovista-2026", user);
-  return user;
-}
-
-export async function loginUser(email: string, password: string): Promise<AuthUser> {
-  const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-  });
-
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok || !body.success) {
-    throw new Error(body.message || "Invalid credentials. Please verify your email and password.");
+  if (!res.ok || !body.success || !body.data) {
+    throw new Error(body.message || "Signup failed. Please try again.");
   }
 
   const data = body.data;
+
   const user: AuthUser = {
     id: data.userId,
     name: data.name,
@@ -149,5 +108,46 @@ export async function loginUser(email: string, password: string): Promise<AuthUs
   };
 
   setAuthSession(data.token, user);
+
+  return user;
+}
+
+export async function loginUser(
+  email: string,
+  password: string
+): Promise<AuthUser> {
+  const res = await fetch(
+    `${getApiBaseUrl()}/api/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password,
+      }),
+    }
+  );
+
+  const body: AuthResponse = await res.json().catch(() => ({
+    success: false,
+    message: "Invalid response from server.",
+  }));
+
+  if (!res.ok || !body.success || !body.data) {
+    throw new Error(body.message || "Invalid email or password.");
+  }
+
+  const data = body.data;
+
+  const user: AuthUser = {
+    id: data.userId,
+    name: data.name,
+    email: data.email,
+  };
+
+  setAuthSession(data.token, user);
+
   return user;
 }
